@@ -6,6 +6,7 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import { useToast } from '../../components/shared/Toast';
 import { Search, Calendar, MapPin, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,6 +14,7 @@ export const EventsPage: React.FC = () => {
   const navigate = useNavigate();
   const { profile } = useAuthStore();
   const { events, registerForEvent, unregisterFromEvent } = useAppStore();
+  const toast = useToast();
 
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
@@ -30,10 +32,10 @@ export const EventsPage: React.FC = () => {
   const handleRegister = (eventId: string, isRegistered: boolean) => {
     if (isRegistered) {
       unregisterFromEvent(eventId, profile.userId);
-      alert('Cancelled event registration.');
+      toast.info('Registration Cancelled', 'You have been removed from this event.');
     } else {
       registerForEvent(eventId, profile.userId);
-      alert('Event registration confirmed! Added to your dashboard.');
+      toast.success('Registered!', 'Event added to your dashboard.');
     }
   };
 
@@ -122,7 +124,7 @@ export const EventsPage: React.FC = () => {
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '8px' }}>
-                    <Button variant="outline" size="sm" onClick={() => navigate(`/events/detail?id=${ev.id}`)}>
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/events/${ev.id}`)}>
                       Details
                     </Button>
                     <Button

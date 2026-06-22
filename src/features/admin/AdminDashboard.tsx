@@ -12,7 +12,6 @@ import {
   Calendar,
   Compass,
   ShieldAlert,
-  TrendingUp,
   Search,
   CheckCircle,
   XCircle,
@@ -31,7 +30,6 @@ export const AdminDashboard: React.FC = () => {
     reports,
     studyGroups,
     teams,
-    verifyStudent,
     suspendStudent,
     resolveReport,
     deleteEvent,
@@ -215,7 +213,7 @@ export const AdminDashboard: React.FC = () => {
                       </td>
                       <td style={{ padding: '12px 16px' }}>
                         <div style={{ display: 'flex', gap: '6px' }}>
-                          <Button variant="ghost" size="sm" style={{ padding: '4px' }} onClick={() => navigate(`/profile?id=${p.userId}`)}>
+                          <Button variant="ghost" size="sm" style={{ padding: '4px' }} onClick={() => navigate(`/profile/${p.userId}`)}>
                             <Eye size={14} />
                           </Button>
                           <Button variant="ghost" size="sm" style={{ padding: '4px', color: 'var(--accent-rose)' }} onClick={() => {

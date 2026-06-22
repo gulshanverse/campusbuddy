@@ -6,13 +6,15 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { Search, Compass, Users } from 'lucide-react';
+import { useToast } from '../../components/shared/Toast';
+import { Search, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const ClubsPage: React.FC = () => {
   const navigate = useNavigate();
   const { profile } = useAuthStore();
   const { clubs, followClub } = useAppStore();
+  const toast = useToast();
 
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
@@ -126,7 +128,7 @@ export const ClubsPage: React.FC = () => {
 
                   {/* Actions */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '6px' }}>
-                    <Button variant="outline" size="sm" onClick={() => navigate(`/clubs/detail?id=${club.id}`)}>
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/clubs/${club.id}`)}>
                       Club Page
                     </Button>
                     <Button
@@ -134,7 +136,11 @@ export const ClubsPage: React.FC = () => {
                       size="sm"
                       onClick={() => {
                         followClub(club.id, profile.userId);
-                        alert(isMember ? 'Unfollowed club updates.' : 'Followed club updates successfully!');
+                        if (isMember) {
+                          toast.info('Unfollowed', `No longer following ${club.name}`);
+                        } else {
+                          toast.success('Following!', `You\'ll receive updates from ${club.name}.`);
+                        }
                       }}
                     >
                       {isMember ? 'Unfollow' : 'Follow'}

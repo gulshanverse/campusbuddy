@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, Profile, Club, ClubApplication, Event, StudyGroup, Team, ChatConversation, Message, Notification, Report } from '../types';
+import type { Profile, Club, ClubApplication, Event, StudyGroup, Team, ChatConversation, Message, Notification, Report } from '../types';
 import {
   mockProfiles,
   mockClubs,
@@ -10,8 +10,7 @@ import {
   mockConversations,
   mockMessages,
   mockNotifications,
-  mockReports,
-  mockUsers
+  mockReports
 } from '../data/mockData';
 
 interface AppState {
@@ -63,6 +62,9 @@ interface AppState {
   createEvent: (event: Partial<Event>) => void;
   deleteClub: (clubId: string) => void;
   createClub: (club: Partial<Club>) => void;
+
+  // Mutators - Notifications
+  markAllNotificationsRead: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -82,8 +84,9 @@ export const useAppStore = create<AppState>()(
 
       // Study Groups
       createStudyGroup: (group) => {
+        const newGroupId = 'sg_' + Date.now();
         const newGroup: StudyGroup = {
-          id: 'sg_' + Date.now(),
+          id: newGroupId,
           name: group.name || 'Untitled Group',
           subject: group.subject || 'DSA',
           description: group.description || '',
@@ -94,39 +97,67 @@ export const useAppStore = create<AppState>()(
           isOpen: true,
           createdAt: new Date().toISOString()
         };
+        const newConv: ChatConversation = {
+          id: 'c_' + newGroupId,
+          type: 'study_group',
+          participantIds: [group.creatorId || ''],
+          name: (group.name || 'Untitled Group') + ' Chat',
+          lastMessage: 'Study channel opened',
+          lastMessageTime: new Date().toISOString()
+        };
         set((state) => ({
-          studyGroups: [newGroup, ...state.studyGroups]
+          studyGroups: [newGroup, ...state.studyGroups],
+          conversations: [newConv, ...state.conversations]
         }));
       },
 
       joinStudyGroup: (groupId, userId) => {
-        set((state) => ({
-          studyGroups: state.studyGroups.map((g) => {
+        set((state) => {
+          const updatedGroups = state.studyGroups.map((g) => {
             if (g.id === groupId && !g.memberIds.includes(userId) && g.memberIds.length < g.maxMembers) {
               const updatedMembers = [...g.memberIds, userId];
               return { ...g, memberIds: updatedMembers, isOpen: updatedMembers.length < g.maxMembers };
             }
             return g;
-          })
-        }));
+          });
+          
+          const updatedConversations = state.conversations.map((c) => {
+            if (c.id === 'c_' + groupId && !c.participantIds.includes(userId)) {
+              return { ...c, participantIds: [...c.participantIds, userId] };
+            }
+            return c;
+          });
+
+          return { studyGroups: updatedGroups, conversations: updatedConversations };
+        });
       },
 
       leaveStudyGroup: (groupId, userId) => {
-        set((state) => ({
-          studyGroups: state.studyGroups.map((g) => {
+        set((state) => {
+          const updatedGroups = state.studyGroups.map((g) => {
             if (g.id === groupId) {
               const updatedMembers = g.memberIds.filter((m) => m !== userId);
               return { ...g, memberIds: updatedMembers, isOpen: true };
             }
             return g;
-          })
-        }));
+          });
+
+          const updatedConversations = state.conversations.map((c) => {
+            if (c.id === 'c_' + groupId) {
+              return { ...c, participantIds: c.participantIds.filter(id => id !== userId) };
+            }
+            return c;
+          });
+
+          return { studyGroups: updatedGroups, conversations: updatedConversations };
+        });
       },
 
       // Teams
       createTeam: (team) => {
+        const newTeamId = 't_' + Date.now();
         const newTeam: Team = {
-          id: 't_' + Date.now(),
+          id: newTeamId,
           name: team.name || 'New Team',
           hackathonName: team.hackathonName || 'General',
           description: team.description || '',
@@ -137,20 +168,38 @@ export const useAppStore = create<AppState>()(
           status: 'forming',
           createdAt: new Date().toISOString()
         };
+        const newConv: ChatConversation = {
+          id: 'c_' + newTeamId,
+          type: 'team',
+          participantIds: [team.leaderId || ''],
+          name: (team.name || 'New Team') + ' Team Chat',
+          lastMessage: 'Team channel opened',
+          lastMessageTime: new Date().toISOString()
+        };
         set((state) => ({
-          teams: [newTeam, ...state.teams]
+          teams: [newTeam, ...state.teams],
+          conversations: [newConv, ...state.conversations]
         }));
       },
 
       joinTeam: (teamId, userId) => {
-        set((state) => ({
-          teams: state.teams.map((t) => {
+        set((state) => {
+          const updatedTeams = state.teams.map((t) => {
             if (t.id === teamId && !t.memberIds.includes(userId)) {
               return { ...t, memberIds: [...t.memberIds, userId] };
             }
             return t;
-          })
-        }));
+          });
+
+          const updatedConversations = state.conversations.map((c) => {
+            if (c.id === 'c_' + teamId && !c.participantIds.includes(userId)) {
+              return { ...c, participantIds: [...c.participantIds, userId] };
+            }
+            return c;
+          });
+
+          return { teams: updatedTeams, conversations: updatedConversations };
+        });
       },
 
       applyToRole: (teamId, role, userId) => {
@@ -169,6 +218,13 @@ export const useAppStore = create<AppState>()(
             }
             return t;
           });
+
+          const updatedConversations = state.conversations.map((c) => {
+            if (c.id === 'c_' + teamId && !c.participantIds.includes(userId)) {
+              return { ...c, participantIds: [...c.participantIds, userId] };
+            }
+            return c;
+          });
           
           // Send notification to team leader
           const targetTeam = state.teams.find(t => t.id === teamId);
@@ -186,7 +242,7 @@ export const useAppStore = create<AppState>()(
             });
           }
 
-          return { teams: updatedTeams, notifications: newNotifications };
+          return { teams: updatedTeams, conversations: updatedConversations, notifications: newNotifications };
         });
       },
 
@@ -253,7 +309,7 @@ export const useAppStore = create<AppState>()(
             {
               id: 'n_' + Date.now(),
               userId: application.userId,
-              type: 'success',
+              type: 'success' as const,
               title: 'Club Membership Approved',
               message: `Congratulations! Your membership request has been approved.`,
               isRead: false,
@@ -281,7 +337,7 @@ export const useAppStore = create<AppState>()(
               {
                 id: 'n_' + Date.now(),
                 userId: application.userId,
-                type: 'warning',
+                type: 'warning' as const,
                 title: 'Club Membership Update',
                 message: `Your membership application was not approved this time.`,
                 isRead: false,
@@ -408,7 +464,7 @@ export const useAppStore = create<AppState>()(
         }));
       },
 
-      blockUser: (userId, targetId) => {
+      blockUser: (_userId, targetId) => {
         set((state) => ({
           blockedUserIds: [...state.blockedUserIds, targetId]
         }));
@@ -430,7 +486,7 @@ export const useAppStore = create<AppState>()(
             {
               id: 'n_' + Date.now(),
               userId,
-              type: 'success',
+              type: 'success' as const,
               title: 'Verification Complete',
               message: 'Your student identity has been verified! You now have a verified badge.',
               isRead: false,
@@ -487,6 +543,12 @@ export const useAppStore = create<AppState>()(
       deleteClub: (clubId) => {
         set((state) => ({
           clubs: state.clubs.filter((c) => c.id !== clubId)
+        }));
+      },
+
+      markAllNotificationsRead: () => {
+        set((state) => ({
+          notifications: state.notifications.map(n => ({ ...n, isRead: true }))
         }));
       },
 

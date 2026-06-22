@@ -1,122 +1,98 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { useAuthStore } from './store/authStore';
+
+// Layouts
+import { AppLayout } from './components/layout/AppLayout';
+import { AuthLayout } from './components/layout/AuthLayout';
+
+// Auth pages (each manages its own AuthLayout internally)
+import { LoginPage } from './features/auth/LoginPage';
+import { RegisterPage } from './features/auth/RegisterPage';
+import { VerificationPage } from './features/auth/VerificationPage';
+
+// Landing
+import { LandingPage } from './features/landing/LandingPage';
+
+// App pages
+import { DashboardPage } from './features/dashboard/DashboardPage';
+import { StudyBuddyPage } from './features/study-buddy/StudyBuddyPage';
+import { HackathonPage } from './features/hackathon/HackathonPage';
+import { ClubsPage } from './features/clubs/ClubsPage';
+import { ClubDetail } from './features/clubs/ClubDetail';
+import { EventsPage } from './features/events/EventsPage';
+import { EventDetail } from './features/events/EventDetail';
+import { ChatPage } from './features/chat/ChatPage';
+import { ProfilePage } from './features/profiles/ProfilePage';
+import { EditProfilePage } from './features/profiles/EditProfilePage';
+import { AdminDashboard } from './features/admin/AdminDashboard';
+
+// Components
+import { ToastProvider } from './components/shared/Toast';
+
+// ─── Route Guards ──────────────────────────────────────────────────────────────
+
+/** Redirect to /login if not authenticated */
+const PrivateRoute: React.FC = () => {
+  const { user } = useAuthStore();
+  return user ? <Outlet /> : <Navigate to="/login" replace />;
+};
+
+/** Redirect to /dashboard if already logged in */
+const PublicRoute: React.FC = () => {
+  const { user } = useAuthStore();
+  return user ? <Navigate to="/dashboard" replace /> : <Outlet />;
+};
+
+// ─── Root App ─────────────────────────────────────────────────────────────────
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <ToastProvider>
+      <BrowserRouter>
+        <Routes>
 
-      <div className="ticks"></div>
+          {/* ── Public landing (no auth) ── */}
+          <Route path="/" element={<LandingPage />} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          {/* ── Auth routes (redirect if logged-in) ── */}
+          <Route element={<PublicRoute />}>
+            <Route element={<AuthLayout><Outlet /></AuthLayout>}>
+              <Route path="/login"    element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+            </Route>
+          </Route>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          {/* ── Verification (needs auth, but not full layout) ── */}
+          <Route element={<PrivateRoute />}>
+            <Route path="/verify" element={<VerificationPage />} />
+          </Route>
+
+          {/* ── Protected app routes wrapped in sidebar shell ── */}
+          <Route element={<PrivateRoute />}>
+            <Route element={<AppLayout><Outlet /></AppLayout>}>
+              <Route path="/dashboard"    element={<DashboardPage />} />
+              <Route path="/study-buddy"  element={<StudyBuddyPage />} />
+              <Route path="/hackathon"    element={<HackathonPage />} />
+              <Route path="/clubs"        element={<ClubsPage />} />
+              <Route path="/clubs/:id"    element={<ClubDetail />} />
+              <Route path="/events"       element={<EventsPage />} />
+              <Route path="/events/:id"   element={<EventDetail />} />
+              <Route path="/chat"         element={<ChatPage />} />
+              <Route path="/profile"      element={<ProfilePage />} />
+              <Route path="/profile/:id"  element={<ProfilePage />} />
+              <Route path="/profile/edit" element={<EditProfilePage />} />
+              <Route path="/admin"        element={<AdminDashboard />} />
+            </Route>
+          </Route>
+
+          {/* ── Catch-all ── */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
+  );
 }
 
-export default App
+export default App;

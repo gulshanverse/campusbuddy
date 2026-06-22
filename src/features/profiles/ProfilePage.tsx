@@ -7,35 +7,29 @@ import { Badge } from '../../components/ui/Badge';
 import { Avatar } from '../../components/ui/Avatar';
 import { Tabs } from '../../components/ui/Tabs';
 import { ReportModal } from '../../components/shared/ReportModal';
+import { useToast } from '../../components/shared/Toast';
 import { 
-  ShieldCheck, 
   MapPin, 
   BookOpen, 
-  Briefcase, 
-  Calendar, 
   Award, 
-  Code,
   MessageSquare,
   AlertTriangle,
-  Settings,
-  ShieldAlert
+  Settings
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
+  const { id: paramId } = useParams<{ id: string }>();
   const { user: currentUser, profile: currentProfile } = useAuthStore();
-  const { profiles, blockUser } = useAppStore();
+  const { profiles, blockUser, startConversation } = useAppStore();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState('about');
   const [isReportOpen, setIsReportOpen] = useState(false);
 
-  // For testing/preview: let's fetch profile based on query hash (e.g. #/profile?id=u2)
-  const hash = window.location.hash;
-  const queryParams = new URLSearchParams(hash.split('?')[1]);
-  const queryId = queryParams.get('id');
-
-  const profileUser = queryId 
-    ? (profiles.find(p => p.userId === queryId) || currentProfile) 
+  // Resolve profile: from URL param or current user
+  const profileUser = paramId
+    ? (profiles.find(p => p.userId === paramId) || currentProfile)
     : currentProfile;
 
   if (!profileUser) {
@@ -59,7 +53,7 @@ export const ProfilePage: React.FC = () => {
   const handleBlock = () => {
     if (currentUser && profileUser) {
       blockUser(currentUser.id, profileUser.userId);
-      alert(`${profileUser.name} has been blocked. You will no longer see their posts or receive messages.`);
+      toast.warning('User Blocked', `${profileUser.name} has been blocked.`);
       navigate('/dashboard');
     }
   };
@@ -102,7 +96,13 @@ export const ProfilePage: React.FC = () => {
               </Button>
             ) : (
               <>
-                <Button variant="primary" onClick={() => navigate('/chat')} leftIcon={<MessageSquare size={16} />}>
+                <Button variant="primary" onClick={() => {
+                  if (currentUser && profileUser) {
+                    const convId = startConversation([currentUser.id, profileUser.userId], 'direct');
+                    toast.success('Chat Opened', `Started direct message with ${profileUser.name}.`);
+                    navigate('/chat', { state: { activeConvId: convId } });
+                  }
+                }} leftIcon={<MessageSquare size={16} />}>
                   Send Message
                 </Button>
                 <Button variant="ghost" onClick={() => setIsReportOpen(true)} style={{ color: 'var(--text-muted)' }}>

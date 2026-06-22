@@ -6,24 +6,22 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Avatar } from '../../components/ui/Avatar';
 import { Tabs } from '../../components/ui/Tabs';
-import { ArrowLeft, Users, Calendar, Sparkles, Send } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../components/shared/Toast';
+import { ArrowLeft, Sparkles, Send } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export const ClubDetail: React.FC = () => {
   const navigate = useNavigate();
+  const { id: clubId } = useParams<{ id: string }>();
   const { profile } = useAuthStore();
   const { clubs, clubApplications, events, profiles, applyToClub, followClub } = useAppStore();
+  const toast = useToast();
   
   const [activeTab, setActiveTab] = useState('about');
   
   // Application form state
   const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  // Read ID from hash query
-  const hash = window.location.hash;
-  const queryParams = new URLSearchParams(hash.split('?')[1]);
-  const clubId = queryParams.get('id');
 
   const club = clubs.find(c => c.id === clubId);
   if (!club || !profile) {
@@ -52,7 +50,7 @@ export const ClubDetail: React.FC = () => {
       applyToClub(club.id, profile.userId, reason);
       setSubmitting(false);
       setReason('');
-      alert('Your application was submitted successfully. The club leader will review it.');
+      toast.success('Application Submitted!', 'The club leader will review your application soon.');
     }, 1000);
   };
 
@@ -112,7 +110,11 @@ export const ClubDetail: React.FC = () => {
               variant={isMember ? 'outline' : 'primary'}
               onClick={() => {
                 followClub(club.id, profile.userId);
-                alert(isMember ? 'Unfollowed updates.' : 'Followed club updates successfully!');
+                if (isMember) {
+                  toast.info('Unfollowed', `No longer following ${club.name}.`);
+                } else {
+                  toast.success('Following!', `You\'ll receive updates from ${club.name}.`);
+                }
               }}
             >
               {isMember ? 'Unfollow' : 'Follow Updates'}

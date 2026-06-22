@@ -5,17 +5,16 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Avatar } from '../../components/ui/Avatar';
-import { ArrowLeft, Calendar, MapPin, Users, Share2, Bookmark } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../components/shared/Toast';
+import { ArrowLeft, Calendar, MapPin, Users, Share2 } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export const EventDetail: React.FC = () => {
   const navigate = useNavigate();
+  const { id: eventId } = useParams<{ id: string }>();
   const { profile } = useAuthStore();
   const { events, profiles, registerForEvent, unregisterFromEvent } = useAppStore();
-
-  const hash = window.location.hash;
-  const queryParams = new URLSearchParams(hash.split('?')[1]);
-  const eventId = queryParams.get('id');
+  const toast = useToast();
 
   const event = events.find(e => e.id === eventId);
 
@@ -34,10 +33,10 @@ export const EventDetail: React.FC = () => {
   const handleRegister = () => {
     if (isRegistered) {
       unregisterFromEvent(event.id, profile.userId);
-      alert('Unregistered from event successfully.');
+      toast.info('Registration Cancelled', 'You have been unregistered from this event.');
     } else {
       registerForEvent(event.id, profile.userId);
-      alert('Registration confirmed! You will receive updates about this event.');
+      toast.success('Registration Confirmed!', 'You will receive updates about this event.');
     }
   };
 
@@ -67,7 +66,10 @@ export const EventDetail: React.FC = () => {
               </h1>
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <Button variant="outline" size="sm" onClick={() => alert('Event link copied to clipboard!')}>
+              <Button variant="outline" size="sm" onClick={() => {
+                navigator.clipboard?.writeText(window.location.href).catch(() => {});
+                toast.info('Link Copied', 'Event link copied to clipboard!');
+              }}>
                 <Share2 size={16} />
               </Button>
               <Button

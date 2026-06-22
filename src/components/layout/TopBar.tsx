@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { useAppStore } from '../../store/appStore';
-import { Bell, Search, User, ShieldCheck, Mail, LogOut, Check } from 'lucide-react';
+import { Bell, User, LogOut } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
-import { Button } from '../ui/Button';
+import { useNavigate } from 'react-router-dom';
 
 interface TopBarProps {
   onToggleSidebar: () => void;
@@ -11,17 +11,16 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, collapsed }) => {
+  const navigate = useNavigate();
   const { user, profile, logout } = useAuthStore();
-  const { notifications } = useAppStore();
+  const { notifications, markAllNotificationsRead } = useAppStore();
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   const unreadNotifs = notifications.filter(n => !n.isRead);
 
   const markAllRead = () => {
-    // Simplify: in general store we can mark all read, but here we can just clear in memory or let it be
-    // We'll update the store state if needed, but let's keep it simple for now
-    notifications.forEach(n => n.isRead = true);
+    markAllNotificationsRead();
     setShowNotifDropdown(false);
   };
 
@@ -242,7 +241,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, collapsed }) =>
                 <div
                   onClick={() => {
                     setShowProfileDropdown(false);
-                    window.location.hash = '#/profile';
+                    navigate('/profile');
                   }}
                   style={{
                     display: 'flex',
@@ -267,7 +266,10 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, collapsed }) =>
                   View Profile
                 </div>
                 <div
-                  onClick={logout}
+                  onClick={() => {
+                    logout();
+                    navigate('/');
+                  }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',

@@ -9,13 +9,15 @@ import { Badge } from '../../components/ui/Badge';
 import { Avatar } from '../../components/ui/Avatar';
 import { Tabs } from '../../components/ui/Tabs';
 import { Modal } from '../../components/ui/Modal';
-import { Search, Plus, BookOpen, Clock, Users, ArrowRight, UserPlus } from 'lucide-react';
+import { useToast } from '../../components/shared/Toast';
+import { Search, Plus, Clock, Users, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const StudyBuddyPage: React.FC = () => {
   const navigate = useNavigate();
   const { profile } = useAuthStore();
-  const { studyGroups, profiles, joinStudyGroup, leaveStudyGroup, createStudyGroup } = useAppStore();
+  const { studyGroups, profiles, joinStudyGroup, leaveStudyGroup, createStudyGroup, startConversation } = useAppStore();
+  const toast = useToast();
   
   // Navigation Tabs
   const [activeTab, setActiveTab] = useState('groups'); // 'groups' | 'partners'
@@ -189,7 +191,7 @@ export const StudyBuddyPage: React.FC = () => {
                         disabled={isFull}
                         onClick={() => {
                           joinStudyGroup(g.id, profile.userId);
-                          alert(`Joined study group ${g.name}! Check group chats.`);
+                          toast.success('Joined!', `Welcome to ${g.name}. Check group chat for updates.`);
                         }}
                       >
                         {isFull ? 'Group Full' : 'Join Group'}
@@ -240,10 +242,14 @@ export const StudyBuddyPage: React.FC = () => {
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--border)', paddingTop: '12px', marginTop: '4px' }}>
-                  <Button variant="outline" size="sm" style={{ flex: 1 }} onClick={() => navigate(`/profile?id=${p.userId}`)}>
+                  <Button variant="outline" size="sm" style={{ flex: 1 }} onClick={() => navigate(`/profile/${p.userId}`)}>
                     View Profile
                   </Button>
-                  <Button variant="primary" size="sm" style={{ flex: 1 }} onClick={() => navigate(`/chat`)} leftIcon={<UserPlus size={14} />}>
+                  <Button variant="primary" size="sm" style={{ flex: 1 }} onClick={() => {
+                    const convId = startConversation([profile.userId, p.userId], 'direct');
+                    toast.success('Connection Request Sent', `DM channel with ${p.name} is now open.`);
+                    navigate('/chat', { state: { activeConvId: convId } });
+                  }} leftIcon={<UserPlus size={14} />}>
                     Connect
                   </Button>
                 </div>

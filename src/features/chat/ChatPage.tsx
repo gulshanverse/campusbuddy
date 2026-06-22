@@ -1,17 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAppStore } from '../../store/appStore';
 import { useAuthStore } from '../../store/authStore';
-import { Card } from '../../components/ui/Card';
 import { Avatar } from '../../components/ui/Avatar';
-import { Button } from '../../components/ui/Button';
-import { Badge } from '../../components/ui/Badge';
-import { Send, MessageSquare, Users, Hash, Plus, BookOpen, Terminal, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Send, MessageSquare, BookOpen, Terminal } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const ChatPage: React.FC = () => {
   const navigate = useNavigate();
   const { user: currentUser, profile: currentProfile } = useAuthStore();
-  const { conversations, messages, sendMessage, profiles, startConversation } = useAppStore();
+  const { conversations, messages, sendMessage, profiles } = useAppStore();
 
   const [activeConvId, setActiveConvId] = useState<string>('');
   const [inputText, setInputText] = useState('');
@@ -19,12 +16,19 @@ export const ChatPage: React.FC = () => {
 
   if (!currentUser || !currentProfile) return null;
 
-  // Auto-select first conversation if none selected
+  const location = useLocation();
+
+  // Auto-select first conversation if none selected, or focus conversation from state
   useEffect(() => {
-    if (conversations.length > 0 && !activeConvId) {
+    const state = location.state as { activeConvId?: string } | null;
+    if (state?.activeConvId) {
+      setActiveConvId(state.activeConvId);
+      // Clean up navigation state so refresh works normally
+      navigate(location.pathname, { replace: true, state: {} });
+    } else if (conversations.length > 0 && !activeConvId) {
       setActiveConvId(conversations[0].id);
     }
-  }, [conversations, activeConvId]);
+  }, [conversations, activeConvId, location.state]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -317,7 +321,7 @@ export const ChatPage: React.FC = () => {
           {activeParticipants.map((p) => (
             <div
               key={p.userId}
-              onClick={() => navigate(`/profile?id=${p.userId}`)}
+              onClick={() => navigate(`/profile/${p.userId}`)}
               style={{
                 display: 'flex',
                 alignItems: 'center',

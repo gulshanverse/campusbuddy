@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Avatar } from '../../components/ui/Avatar';
 import { Modal } from '../../components/ui/Modal';
+import { useToast } from '../../components/shared/Toast';
 import { Search, Plus, Terminal, Users, UserCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,6 +16,7 @@ export const HackathonPage: React.FC = () => {
   const navigate = useNavigate();
   const { profile } = useAuthStore();
   const { teams, profiles, createTeam, applyToRole } = useAppStore();
+  const toast = useToast();
   
   // Search & Filter state
   const [search, setSearch] = useState('');
@@ -59,7 +61,7 @@ export const HackathonPage: React.FC = () => {
 
   const handleApply = (teamId: string, role: string) => {
     applyToRole(teamId, role, profile.userId);
-    alert(`Successfully applied to join as ${role}! The team leader has been notified.`);
+    toast.success('Application Sent!', `Applied to join as ${role}. The team leader has been notified.`);
   };
 
   // Filter teams based on search query and role filter

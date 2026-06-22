@@ -16,6 +16,7 @@ import {
   Sparkles,
   BookOpen
 } from 'lucide-react';
+import { RecommendationsWidget } from '../ai/RecommendationsWidget';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -30,21 +31,7 @@ export const DashboardPage: React.FC = () => {
   const myGroups = studyGroups.filter(g => g.memberIds.includes(profile.userId));
   const myTeams = teams.filter(t => t.memberIds.includes(profile.userId) || t.leaderId === profile.userId);
 
-  // Recommendations: simple AI logic (match people by shared skills/looking for overlap)
-  const recommendations = profiles
-    .filter(p => p.userId !== profile.userId)
-    .slice(0, 3)
-    .map(p => {
-      const sharedSkills = p.skills.filter(s => profile.skills.includes(s));
-      const matchScore = 70 + (sharedSkills.length * 8) + (p.branch === profile.branch ? 10 : 0);
-      return {
-        profile: p,
-        matchScore: Math.min(matchScore, 99),
-        reason: sharedSkills.length > 0 
-          ? `Both know ${sharedSkills.slice(0, 2).join(', ')}` 
-          : `Common branch: ${p.branch}`
-      };
-    });
+  // Recommendations will be handled by the RecommendationsWidget
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -216,54 +203,7 @@ export const DashboardPage: React.FC = () => {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {/* AI Recommended Connections */}
-          <Card padding="md">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-              <Sparkles size={18} style={{ color: 'var(--accent-purple)' }} />
-              <h3 style={{ fontSize: '1.1rem', fontWeight: '700', fontFamily: 'var(--font-display)' }}>Campus Match suggestions</h3>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {recommendations.map((rec) => (
-                <div
-                  key={rec.profile.userId}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '10px',
-                    paddingBottom: '14px',
-                    borderBottom: '1px solid rgba(255,255,255,0.03)'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Avatar src={rec.profile.avatar} name={rec.profile.name} size="sm" />
-                    <div style={{ flexGrow: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontWeight: '700', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {rec.profile.name}
-                        </span>
-                        <Badge variant="verified" style={{ fontSize: '0.65rem', padding: '0px 4px' }}>
-                          {rec.matchScore}% Match
-                        </Badge>
-                      </div>
-                      <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                        {rec.profile.branch} • Year {rec.profile.year}
-                      </span>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.01)', padding: '6px 10px', borderRadius: '4px' }}>
-                    💡 {rec.reason}
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
-                    <Button variant="outline" size="sm" style={{ flex: 1, padding: '4px 10px', fontSize: '0.8rem' }} onClick={() => navigate(`/chat`)}>
-                      Message
-                    </Button>
-                    <Button variant="secondary" size="sm" style={{ flex: 1, padding: '4px 10px', fontSize: '0.8rem' }} onClick={() => navigate(`/profile`)}>
-                      View Profile
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
+          <RecommendationsWidget />
 
           {/* Guidelines Safety Widget */}
           <Card padding="md" style={{ background: 'rgba(124, 58, 237, 0.02)', border: '1px solid rgba(124, 58, 237, 0.08)' }}>
