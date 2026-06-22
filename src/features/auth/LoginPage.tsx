@@ -4,7 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import { AuthLayout } from '../../components/layout/AuthLayout';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { ShieldCheck, Mail, Lock } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();

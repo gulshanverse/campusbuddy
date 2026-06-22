@@ -5,15 +5,13 @@ import { useAppStore } from '../../store/appStore';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { Avatar } from '../../components/ui/Avatar';
+
 import { 
   Users, 
   Calendar, 
-  MessageSquare, 
   ShieldCheck, 
   Terminal, 
   ArrowRight,
-  Sparkles,
   BookOpen
 } from 'lucide-react';
 import { RecommendationsWidget } from '../ai/RecommendationsWidget';

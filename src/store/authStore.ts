@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, Profile } from '../types';
+import type { User, Profile } from '../types';
 import { mockUsers, mockProfiles } from '../data/mockData';
 
 interface AuthState {

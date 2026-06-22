@@ -1,11 +1,9 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { useAppStore } from '../../store/appStore';
 import { 
   Home, 
   User as UserIcon, 
-  Users, 
   Terminal, 
   Compass, 
   Calendar, 
@@ -23,12 +21,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
-  const { conversations, notifications } = useAppStore();
 
   const activePath = location.pathname;
 
   const unreadMessagesCount = 0; // Simplified
-  const unreadNotifsCount = notifications.filter(n => !n.isRead).length;
 
   const navItems = [
     { section: 'Personal', items: [

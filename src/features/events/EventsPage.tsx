@@ -7,7 +7,7 @@ import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { useToast } from '../../components/shared/Toast';
-import { Search, Calendar, MapPin, Sparkles } from 'lucide-react';
+import { Search, Calendar, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const EventsPage: React.FC = () => {

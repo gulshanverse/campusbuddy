@@ -3,7 +3,6 @@ import { useAppStore } from '../../store/appStore';
 import { useAuthStore } from '../../store/authStore';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { Badge } from '../../components/ui/Badge';
 import { Avatar } from '../../components/ui/Avatar';
 import { useToast } from '../../components/shared/Toast';
 import { ArrowLeft, Calendar, MapPin, Users, Share2 } from 'lucide-react';

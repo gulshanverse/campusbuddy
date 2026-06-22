@@ -9,11 +9,9 @@ import { Badge } from '../../components/ui/Badge';
 import { Avatar } from '../../components/ui/Avatar';
 import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/shared/Toast';
-import { Search, Plus, Terminal, Users, UserCheck } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Search, Plus } from 'lucide-react';
 
 export const HackathonPage: React.FC = () => {
-  const navigate = useNavigate();
   const { profile } = useAuthStore();
   const { teams, profiles, createTeam, applyToRole } = useAppStore();
   const toast = useToast();
@@ -123,7 +121,6 @@ export const HackathonPage: React.FC = () => {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }} className="grid-cols-2">
           {filteredTeams.map((team) => {
-            const leaderProfile = profiles.find(p => p.userId === team.leaderId);
             const isLeader = team.leaderId === profile.userId;
             const isMember = team.memberIds.includes(profile.userId);
 

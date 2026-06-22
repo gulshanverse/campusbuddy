@@ -1,4 +1,4 @@
-import { User, Profile, Club, Event, StudyGroup, Team, ChatConversation, Message, Notification, Report } from '../types';
+import type { User, Profile, Club, Event, StudyGroup, Team, ChatConversation, Message, Notification, Report } from '../types';
 
 export const mockUsers: User[] = [
   { id: 'u1', email: 'aarav.sharma@college.edu', role: 'student', isVerified: true, trustScore: 98, createdAt: '2026-01-10T10:00:00Z' },

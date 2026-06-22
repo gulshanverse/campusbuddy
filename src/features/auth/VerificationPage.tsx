@@ -4,7 +4,7 @@ import { useAppStore } from '../../store/appStore';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { ShieldCheck, Mail, FileText, Check, Info } from 'lucide-react';
+import { Mail, FileText, Check, Info } from 'lucide-react';
 
 export const VerificationPage: React.FC = () => {
   const { user, verifyUser } = useAuthStore();
@@ -12,7 +12,7 @@ export const VerificationPage: React.FC = () => {
   const [emailStatus, setEmailStatus] = useState<'unverified' | 'sent' | 'verified'>(
     user?.isVerified ? 'verified' : 'unverified'
   );
-  const [file, setFile] = useState<File | null>(null);
+  const [, setFile] = useState<File | null>(null);
   const [idStatus, setIdStatus] = useState<'none' | 'uploading' | 'pending' | 'verified'>(
     user?.isVerified ? 'verified' : 'none'
   );
@@ -175,7 +175,7 @@ export const VerificationPage: React.FC = () => {
                     style={{ display: 'none' }}
                   />
                   <label htmlFor="id-file-upload">
-                    <Button variant="outline" size="sm" as="span" style={{ alignSelf: 'flex-start' }}>
+                    <Button variant="outline" size="sm" style={{ alignSelf: 'flex-start' }}>
                       Select ID Card Image
                     </Button>
                   </label>
