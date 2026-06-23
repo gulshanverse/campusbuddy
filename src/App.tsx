@@ -4,7 +4,6 @@ import { useAuthStore } from './store/authStore';
 
 // Layouts
 import { AppLayout } from './components/layout/AppLayout';
-import { AuthLayout } from './components/layout/AuthLayout';
 
 // Auth pages (each manages its own AuthLayout internally)
 import { LoginPage } from './features/auth/LoginPage';
@@ -57,10 +56,8 @@ function App() {
 
           {/* ── Auth routes (redirect if logged-in) ── */}
           <Route element={<PublicRoute />}>
-            <Route element={<AuthLayout><Outlet /></AuthLayout>}>
-              <Route path="/login"    element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-            </Route>
+            <Route path="/login"    element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
           </Route>
 
           {/* ── Verification (needs auth, but not full layout) ── */}
